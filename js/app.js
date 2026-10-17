@@ -149,6 +149,21 @@ class TradingViewApp {
             });
         });
 
+        // Market Ribbon horizontal scroll buttons
+        const ribbonLeft = document.getElementById('ribbon-scroll-left');
+        const ribbonRight = document.getElementById('ribbon-scroll-right');
+        const ribbonItems = document.getElementById('market-ribbon-items');
+        if (ribbonLeft && ribbonItems) {
+            ribbonLeft.addEventListener('click', () => {
+                ribbonItems.scrollBy({ left: -220, behavior: 'smooth' });
+            });
+        }
+        if (ribbonRight && ribbonItems) {
+            ribbonRight.addEventListener('click', () => {
+                ribbonItems.scrollBy({ left: 220, behavior: 'smooth' });
+            });
+        }
+
         // Fullscreen toggle
         const fsBtn = document.getElementById('fullscreen-btn');
         if (fsBtn) {
@@ -338,6 +353,45 @@ class TradingViewApp {
                 this.renderOptionChain();
             });
         }
+
+        const scrollUp = () => {
+            const tableContainer = document.querySelector('.oc-table-container');
+            if (tableContainer) {
+                tableContainer.scrollBy({ top: -160, behavior: 'smooth' });
+            }
+        };
+
+        const scrollDown = () => {
+            const tableContainer = document.querySelector('.oc-table-container');
+            if (tableContainer) {
+                tableContainer.scrollBy({ top: 160, behavior: 'smooth' });
+            }
+        };
+
+        const scrollToATM = () => {
+            const atmRow = document.querySelector('.oc-row-atm');
+            if (atmRow) {
+                atmRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }
+        };
+
+        // Header buttons
+        const upBtn = document.getElementById('oc-scroll-up');
+        const downBtn = document.getElementById('oc-scroll-down');
+        const atmBtn = document.getElementById('oc-scroll-atm');
+
+        if (upBtn) upBtn.addEventListener('click', scrollUp);
+        if (downBtn) downBtn.addEventListener('click', scrollDown);
+        if (atmBtn) atmBtn.addEventListener('click', scrollToATM);
+
+        // Floating table buttons
+        const floatUp = document.getElementById('oc-float-up');
+        const floatDown = document.getElementById('oc-float-down');
+        const floatAtm = document.getElementById('oc-float-atm');
+
+        if (floatUp) floatUp.addEventListener('click', scrollUp);
+        if (floatDown) floatDown.addEventListener('click', scrollDown);
+        if (floatAtm) floatAtm.addEventListener('click', scrollToATM);
     }
 
     renderOptionChain() {
@@ -636,6 +690,33 @@ class TradingViewApp {
         });
 
         listContainer.innerHTML = '';
+
+        // Wire Watchlist Scroll Buttons
+        const watchlistScrollTop = document.getElementById('w-scroll-top');
+        const watchlistScrollBottom = document.getElementById('w-scroll-bottom');
+        const watchlistScrollActive = document.getElementById('w-scroll-active');
+        const watchlistPanel = document.getElementById('watchlist-panel');
+
+        if (watchlistScrollTop && !watchlistScrollTop.dataset.bound) {
+            watchlistScrollTop.dataset.bound = 'true';
+            watchlistScrollTop.addEventListener('click', () => {
+                if (watchlistPanel) watchlistPanel.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+        if (watchlistScrollBottom && !watchlistScrollBottom.dataset.bound) {
+            watchlistScrollBottom.dataset.bound = 'true';
+            watchlistScrollBottom.addEventListener('click', () => {
+                if (watchlistPanel) watchlistPanel.scrollTo({ top: watchlistPanel.scrollHeight, behavior: 'smooth' });
+            });
+        }
+        if (watchlistScrollActive && !watchlistScrollActive.dataset.bound) {
+            watchlistScrollActive.dataset.bound = 'true';
+            watchlistScrollActive.addEventListener('click', () => {
+                const activeItem = document.querySelector('.watchlist-item.active');
+                if (activeItem) activeItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            });
+        }
+
         const allSymbols = this.dataFeed.symbols;
 
         Object.keys(allSymbols).forEach(symbol => {

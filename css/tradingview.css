@@ -197,11 +197,38 @@ body {
     align-items: center;
     gap: 4px;
 }
+.ribbon-scroll-btn {
+    background: var(--tv-bg-secondary);
+    border: 1px solid var(--tv-border);
+    border-radius: 4px;
+    color: var(--tv-text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+    width: 20px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    user-select: none;
+}
+.ribbon-scroll-btn:hover {
+    background: var(--tv-bg-tertiary);
+    color: var(--tv-accent-blue);
+    border-color: var(--tv-accent-blue);
+}
 .ribbon-items {
     display: flex;
     align-items: center;
     gap: 6px;
     overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+.ribbon-items::-webkit-scrollbar {
+    display: none;
 }
 .ribbon-pill {
     background: var(--tv-bg-secondary);
@@ -229,6 +256,26 @@ body {
     background: rgba(41, 98, 255, 0.2);
     color: var(--tv-accent-blue);
     border-color: var(--tv-accent-blue);
+}
+.option-pill-ce {
+    background: rgba(8, 153, 129, 0.12);
+    border-color: rgba(8, 153, 129, 0.4);
+    color: #089981;
+}
+.option-pill-ce:hover, .option-pill-ce.active {
+    background: rgba(8, 153, 129, 0.25);
+    border-color: #089981;
+    color: #089981;
+}
+.option-pill-pe {
+    background: rgba(242, 54, 69, 0.12);
+    border-color: rgba(242, 54, 69, 0.4);
+    color: #f23645;
+}
+.option-pill-pe:hover, .option-pill-pe.active {
+    background: rgba(242, 54, 69, 0.25);
+    border-color: #f23645;
+    color: #f23645;
 }
 .ribbon-divider {
     width: 1px;
@@ -1177,4 +1224,123 @@ input:checked + .slider:before {
     border-top: 1px solid var(--tv-border);
     text-align: center;
     flex-shrink: 0;
+}
+
+/* Watchlist Quick Scroll Controls */
+.watchlist-scroll-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #161a25;
+    border-bottom: 1px solid var(--tv-border);
+    font-size: 10.5px;
+    flex-shrink: 0;
+}
+.w-scroll-label {
+    color: var(--tv-text-secondary);
+    font-weight: 600;
+    margin-right: 2px;
+}
+.w-scroll-btn {
+    background: var(--tv-bg-secondary);
+    border: 1px solid var(--tv-border);
+    border-radius: 3px;
+    color: var(--tv-text-secondary);
+    font-size: 10px;
+    font-family: inherit;
+    font-weight: 600;
+    padding: 2px 7px;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+.w-scroll-btn:hover {
+    background: var(--tv-bg-tertiary);
+    color: var(--tv-text-primary);
+    border-color: var(--tv-border-hover);
+}
+.w-scroll-active {
+    color: #ff9800 !important;
+    border-color: rgba(255, 152, 0, 0.4) !important;
+}
+
+/* Option Chain Scroll Button Group in Header */
+.oc-scroll-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: auto;
+}
+.oc-scroll-btn {
+    background: var(--tv-bg-secondary);
+    border: 1px solid var(--tv-border);
+    border-radius: 3px;
+    color: var(--tv-text-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    cursor: pointer;
+    transition: all 0.12s;
+    user-select: none;
+}
+.oc-scroll-btn:hover {
+    background: var(--tv-bg-tertiary);
+    color: var(--tv-accent-blue);
+    border-color: var(--tv-accent-blue);
+}
+.oc-atm-btn {
+    color: #ff9800;
+    border-color: rgba(255, 152, 0, 0.45);
+    background: rgba(255, 152, 0, 0.08);
+}
+.oc-atm-btn:hover {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    border-color: #ff9800;
+}
+
+/* Floating Scroll Controls inside Option Chain Table */
+.oc-table-container {
+    position: relative;
+}
+.oc-floating-scroll-widget {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: rgba(19, 23, 34, 0.92);
+    border: 1px solid var(--tv-border);
+    border-radius: 5px;
+    padding: 3px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    backdrop-filter: blur(6px);
+}
+.oc-float-btn {
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    color: var(--tv-text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+.oc-float-btn:hover {
+    background: var(--tv-bg-tertiary);
+    color: var(--tv-accent-blue);
+}
+.oc-float-atm {
+    color: #ff9800;
+    font-size: 12px;
+}
+.oc-float-atm:hover {
+    background: rgba(255, 152, 0, 0.25);
 }

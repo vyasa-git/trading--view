@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TradingView — NIFTY 50 & Indian Markets Live 1-Minute Chart</title>
-    <link rel="stylesheet" href="css/tradingview.css?v=5.0">
+    <link rel="stylesheet" href="css/tradingview.css?v=5.1">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff9800'><path d='M3 3v18h18V3H3zm16 16H5V5h14v14zM7 10h2v7H7zm4-4h2v11h-2zm4 6h2v5h-2z'/></svg>">
     <!-- Charting Engines -->
     <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -115,8 +115,9 @@
 
     <!-- Indian Markets Quick Selection Ribbon -->
     <div class="tv-market-ribbon">
+        <button class="ribbon-scroll-btn" id="ribbon-scroll-left" title="Scroll Ribbon Left">‹</button>
         <div class="ribbon-label">🇮🇳 NSE / BSE Live:</div>
-        <div class="ribbon-items">
+        <div class="ribbon-items" id="market-ribbon-items">
             <button class="ribbon-pill active" data-symbol="NIFTY50" data-name="NIFTY 50">NIFTY 50</button>
             <button class="ribbon-pill" data-symbol="BANKNIFTY" data-name="BANK NIFTY">BANK NIFTY</button>
             <button class="ribbon-pill" data-symbol="FINNIFTY" data-name="FIN NIFTY">FIN NIFTY</button>
@@ -130,9 +131,13 @@
             <button class="ribbon-pill" data-symbol="BHARTIARTL" data-name="BHARTI AIRTEL">BHARTI AIRTEL</button>
             <button class="ribbon-pill" data-symbol="ITC" data-name="ITC">ITC</button>
             <span class="ribbon-divider"></span>
+            <button class="ribbon-pill option-pill-ce" data-symbol="NIFTY24850CE" data-name="NIFTY 24850 CE">⚡ 24850 CE</button>
+            <button class="ribbon-pill option-pill-pe" data-symbol="NIFTY24850PE" data-name="NIFTY 24850 PE">⚡ 24850 PE</button>
+            <span class="ribbon-divider"></span>
             <button class="ribbon-pill crypto-pill" data-symbol="BTCUSDT" data-name="BTC/USDT">BTC/USDT</button>
             <button class="ribbon-pill crypto-pill" data-symbol="ETHUSDT" data-name="ETH/USDT">ETH/USDT</button>
         </div>
+        <button class="ribbon-scroll-btn" id="ribbon-scroll-right" title="Scroll Ribbon Right">›</button>
     </div>
 
     <!-- Main Workspace -->
@@ -275,6 +280,13 @@
                     <button class="w-subtab" data-cat="Crypto">Crypto</button>
                     <button class="w-subtab" data-cat="Global">Global</button>
                 </div>
+                <!-- Watchlist Quick Scroll Controls -->
+                <div class="watchlist-scroll-bar" id="watchlist-scroll-bar">
+                    <span class="w-scroll-label">Scroll:</span>
+                    <button class="w-scroll-btn" id="w-scroll-top" title="Scroll to Top">▲ Top</button>
+                    <button class="w-scroll-btn w-scroll-active" id="w-scroll-active" title="Scroll to Active Stock">🎯 Active</button>
+                    <button class="w-scroll-btn" id="w-scroll-bottom" title="Scroll to Bottom">▼ Bottom</button>
+                </div>
                 <div id="watchlist-items">
                     <!-- Dynamically populated by app.js -->
                 </div>
@@ -295,11 +307,24 @@
                             <option value="atm500">Active (±500 pts)</option>
                             <option value="all" selected>All Cash Points (24000-25700)</option>
                         </select>
+                        <!-- Quick Scroll Buttons for Option Strikes -->
+                        <div class="oc-scroll-btn-group" title="Scroll Options">
+                            <button class="oc-scroll-btn" id="oc-scroll-up" title="Scroll Up (Higher Strikes)">▲</button>
+                            <button class="oc-scroll-btn oc-atm-btn" id="oc-scroll-atm" title="Jump to ATM Strike">🎯 ATM</button>
+                            <button class="oc-scroll-btn" id="oc-scroll-down" title="Scroll Down (Lower Strikes)">▼</button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Option Chain Table Header -->
                 <div class="oc-table-container">
+                    <!-- Floating Option Scroll Buttons -->
+                    <div class="oc-floating-scroll-widget">
+                        <button class="oc-float-btn" id="oc-float-up" title="Scroll Up (Higher Strikes)">▲</button>
+                        <button class="oc-float-btn oc-float-atm" id="oc-float-atm" title="Jump to ATM Strike">🎯</button>
+                        <button class="oc-float-btn" id="oc-float-down" title="Scroll Down (Lower Strikes)">▼</button>
+                    </div>
+
                     <table class="oc-table" id="option-chain-table">
                         <thead>
                             <tr class="oc-super-header">
@@ -515,11 +540,11 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/indicators.js?v=5.0"></script>
-    <script src="js/data-feed.js?v=5.0"></script>
-    <script src="js/drawing-tools.js?v=5.0"></script>
-    <script src="js/chart-engine.js?v=5.0"></script>
-    <script src="js/app.js?v=5.0"></script>
+    <script src="js/indicators.js?v=5.1"></script>
+    <script src="js/data-feed.js?v=5.1"></script>
+    <script src="js/drawing-tools.js?v=5.1"></script>
+    <script src="js/chart-engine.js?v=5.1"></script>
+    <script src="js/app.js?v=5.1"></script>
 
 </body>
 </html>
