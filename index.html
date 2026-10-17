@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradingView — NIFTY 50 & Indian Markets Live 1-Minute Chart</title>
+    <link rel="stylesheet" href="css/tradingview.css?v=4.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff9800'><path d='M3 3v18h18V3H3zm16 16H5V5h14v14zM7 10h2v7H7zm4-4h2v11h-2zm4 6h2v5h-2z'/></svg>">
+    <!-- Charting Engines -->
+    <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+</head>
+<body>
+
+    <!-- Top Navigation Header -->
+    <header class="tv-header">
+        <div class="tv-logo-area" title="TradingView Live">
+            <svg class="tv-logo-icon" viewBox="0 0 28 28">
+                <path d="M4 21V7h4v14H4zm8-10V7h4v14h-4v-4zm8-4v14h-4V7h4z" fill="#2962ff"/>
+            </svg>
+            <span>TradingView</span>
+        </div>
+
+        <!-- Symbol Selector Trigger -->
+        <div class="symbol-picker-trigger" id="symbol-search-trigger" title="Search Indian stocks or global markets">
+            <span class="symbol-title" id="header-symbol-name">NIFTY50</span>
+            <span class="item-exchange-badge nse-badge" id="header-exchange-tag">NSE</span>
+            <span class="symbol-desc" id="header-symbol-desc">NIFTY 50 Index</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="#787b86">
+                <path d="M1 1L5 5L9 1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <!-- Live Price & Change in Header -->
+        <div class="header-price-box" style="display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums;">
+            <span id="header-last-price" class="tv-text-green" style="font-weight: 700; font-size: 14px;">₹24,850.25</span>
+            <span id="header-change" class="tv-text-green" style="font-size: 11px; font-weight: 600;">+112.40 (+0.45%)</span>
+        </div>
+
+        <div class="header-divider"></div>
+
+        <!-- Timeframe Selector -->
+        <div class="tv-btn-group" title="Timeframe">
+            <button class="tv-btn timeframe-btn" data-tf="15s">15s</button>
+            <button class="tv-btn timeframe-btn" data-tf="30s">30s</button>
+            <button class="tv-btn timeframe-btn active" data-tf="1m">1m</button>
+            <button class="tv-btn timeframe-btn" data-tf="3m">3m</button>
+            <button class="tv-btn timeframe-btn" data-tf="5m">5m</button>
+            <button class="tv-btn timeframe-btn" data-tf="15m">15m</button>
+            <button class="tv-btn timeframe-btn" data-tf="1h">1h</button>
+            <button class="tv-btn timeframe-btn" data-tf="4h">4h</button>
+            <button class="tv-btn timeframe-btn" data-tf="1D">1D</button>
+        </div>
+
+        <div class="header-divider"></div>
+
+        <!-- Chart Type Switcher -->
+        <div class="tv-btn-group" title="Chart Style">
+            <button class="tv-btn chart-type-option active" data-type="candles" title="Candlestick Chart">Candles</button>
+            <button class="tv-btn chart-type-option" data-type="heikin_ashi" title="Heikin Ashi Chart">Heikin Ashi</button>
+            <button class="tv-btn chart-type-option" data-type="line" title="Line Chart">Line</button>
+            <button class="tv-btn chart-type-option" data-type="area" title="Area Chart">Area</button>
+        </div>
+
+        <div class="header-divider"></div>
+
+        <!-- Indicators Trigger Button -->
+        <button class="tv-btn" id="indicators-trigger" title="Technical Indicators">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3v18h18"/>
+                <path d="M18 17V9M13 17V5M8 17v-3"/>
+            </svg>
+            <span>Indicators</span>
+        </button>
+
+        <!-- Volume Toggle Button -->
+        <button class="tv-btn active" id="volume-toggle-btn" title="Toggle Volume Histogram (Vol)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="14" width="4" height="7" rx="1"/>
+                <rect x="9" y="8" width="4" height="13" rx="1"/>
+                <rect x="16" y="3" width="4" height="18" rx="1"/>
+            </svg>
+            <span>Vol</span>
+        </button>
+
+        <div class="header-divider"></div>
+
+        <!-- Engine Mode Switcher -->
+        <button class="engine-toggle-btn" id="engine-toggle-btn" title="Toggle between High-Speed Local Engine and Cloud TradingView Widget">
+            <span id="engine-btn-text">⚡ 1m Live Engine (Active)</span>
+        </button>
+
+        <!-- Right utility actions -->
+        <div class="header-right">
+            <button class="tv-btn" id="screenshot-btn" title="Take a chart snapshot">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                </svg>
+            </button>
+            <button class="tv-btn" id="fullscreen-btn" title="Toggle Fullscreen">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Indian Markets Quick Selection Ribbon -->
+    <div class="tv-market-ribbon">
+        <div class="ribbon-label">🇮🇳 NSE / BSE Live:</div>
+        <div class="ribbon-items">
+            <button class="ribbon-pill active" data-symbol="NIFTY50" data-name="NIFTY 50">NIFTY 50</button>
+            <button class="ribbon-pill" data-symbol="BANKNIFTY" data-name="BANK NIFTY">BANK NIFTY</button>
+            <button class="ribbon-pill" data-symbol="FINNIFTY" data-name="FIN NIFTY">FIN NIFTY</button>
+            <button class="ribbon-pill" data-symbol="RELIANCE" data-name="RELIANCE">RELIANCE</button>
+            <button class="ribbon-pill" data-symbol="HDFCBANK" data-name="HDFC BANK">HDFC BANK</button>
+            <button class="ribbon-pill" data-symbol="TCS" data-name="TCS">TCS</button>
+            <button class="ribbon-pill" data-symbol="INFY" data-name="INFOSYS">INFOSYS</button>
+            <button class="ribbon-pill" data-symbol="ICICIBANK" data-name="ICICI BANK">ICICI BANK</button>
+            <button class="ribbon-pill" data-symbol="TATAMOTORS" data-name="TATA MOTORS">TATA MOTORS</button>
+            <button class="ribbon-pill" data-symbol="SBIN" data-name="SBIN">SBIN</button>
+            <button class="ribbon-pill" data-symbol="BHARTIARTL" data-name="BHARTI AIRTEL">BHARTI AIRTEL</button>
+            <button class="ribbon-pill" data-symbol="ITC" data-name="ITC">ITC</button>
+            <span class="ribbon-divider"></span>
+            <button class="ribbon-pill crypto-pill" data-symbol="BTCUSDT" data-name="BTC/USDT">BTC/USDT</button>
+            <button class="ribbon-pill crypto-pill" data-symbol="ETHUSDT" data-name="ETH/USDT">ETH/USDT</button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="tv-main-container">
+        
+        <!-- Left Drawing Toolbar -->
+        <aside class="tv-left-toolbar" id="standalone-toolbar">
+            <!-- Cursor / Crosshair -->
+            <button class="tool-btn active" data-tool="crosshair" title="Crosshair (C)">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+                </svg>
+            </button>
+
+            <!-- Trend Line -->
+            <button class="tool-btn" data-tool="trendline" title="Trend Line">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 20L20 4"/>
+                    <circle cx="4" cy="20" r="2" fill="currentColor"/>
+                    <circle cx="20" cy="4" r="2" fill="currentColor"/>
+                </svg>
+            </button>
+
+            <!-- Horizontal Line -->
+            <button class="tool-btn" data-tool="horizontal" title="Horizontal Price Line">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2 12h20M7 8l-5 4 5 4M17 8l5 4-5 4"/>
+                </svg>
+            </button>
+
+            <!-- Fibonacci Retracement -->
+            <button class="tool-btn" data-tool="fibonacci" title="Fibonacci Retracement">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 5h18M3 9h18M3 13h18M3 17h18M3 21h18"/>
+                </svg>
+            </button>
+
+            <!-- Rectangle Zone -->
+            <button class="tool-btn" data-tool="rectangle" title="Order Block / Zone Rectangle">
+                <svg viewBox="0 0 24 24">
+                    <rect x="4" y="5" width="16" height="14" rx="1"/>
+                </svg>
+            </button>
+
+            <!-- Measurement Ruler -->
+            <button class="tool-btn" data-tool="measure" title="Measure Distance & Price Range">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5M12 2l10 5-10 5-10-5 10-5z"/>
+                </svg>
+            </button>
+
+            <div class="toolbar-separator"></div>
+
+            <!-- Clear All Drawings -->
+            <button class="tool-btn" data-tool="clear" title="Clear All Drawings">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+            </button>
+        </aside>
+
+        <!-- Center Chart Stage -->
+        <main class="tv-chart-area">
+            <div id="chart-wrapper">
+                <!-- Floating Watermark -->
+                <div class="chart-watermark" id="chart-watermark">NIFTY50</div>
+
+                <!-- Floating OHLCV Legend -->
+                <div class="tv-legend" id="ohlcv-legend">
+                    <div class="legend-item"><span class="legend-label">O</span><span id="legend-o">--</span></div>
+                    <div class="legend-item"><span class="legend-label">H</span><span id="legend-h">--</span></div>
+                    <div class="legend-item"><span class="legend-label">L</span><span id="legend-l">--</span></div>
+                    <div class="legend-item"><span class="legend-label">C</span><span id="legend-c">--</span></div>
+                    <div class="legend-item"><span class="legend-label">Chg</span><span id="legend-change">--</span></div>
+                </div>
+
+                <!-- 1. Standalone High-Speed 1m Canvas Chart Container (Default - 100% works locally) -->
+                <div id="chart-container"></div>
+
+                <!-- 2. Official TradingView Cloud Chart Container (Toggled via button) -->
+                <div id="tv_chart_container" style="display:none;"></div>
+
+                <!-- Price Scale Countdown Overlay on Right Scale -->
+                <div class="price-scale-overlay">
+                    <div class="candle-countdown-badge" id="candle-countdown">00:60</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar -->
+        <aside class="tv-right-sidebar">
+            <div class="sidebar-tab-header">
+                <button class="sidebar-tab active" data-target="watchlist-panel">Watchlist</button>
+                <button class="sidebar-tab" data-target="trades-panel">Live Tape</button>
+                <button class="sidebar-tab" data-target="technicals-panel">Technicals</button>
+            </div>
+
+            <!-- Panel 1: Watchlist -->
+            <div class="sidebar-panel-content active" id="watchlist-panel">
+                <div class="watchlist-subtabs" id="watchlist-category-tabs">
+                    <button class="w-subtab active" data-cat="Indian">🇮🇳 Indian</button>
+                    <button class="w-subtab" data-cat="All">All</button>
+                    <button class="w-subtab" data-cat="Crypto">Crypto</button>
+                    <button class="w-subtab" data-cat="Global">Global</button>
+                </div>
+                <div id="watchlist-items">
+                    <!-- Dynamically populated by app.js -->
+                </div>
+            </div>
+
+            <!-- Panel 2: Live Trades Tape -->
+            <div class="sidebar-panel-content" id="trades-panel">
+                <div class="trades-header-row">
+                    <span>Price</span>
+                    <span>Qty</span>
+                    <span>Time</span>
+                </div>
+                <div id="trades-tape-list">
+                    <!-- Dynamically populated by app.js -->
+                </div>
+            </div>
+
+            <!-- Panel 3: Technicals & Details -->
+            <div class="sidebar-panel-content" id="technicals-panel">
+                <div class="technical-box">
+                    <div class="section-title">Technical Sentiment (1m)</div>
+                    <div class="tech-sentiment" id="tech-summary-text" style="color: #089981;">STRONG BUY</div>
+                </div>
+
+                <div class="details-section">
+                    <div class="section-title">24h Statistics</div>
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <span class="stat-label">24h High</span>
+                            <span class="stat-val tv-text-green" id="detail-high">--</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">24h Low</span>
+                            <span class="stat-val tv-text-red" id="detail-low">--</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Volume (Contracts)</span>
+                            <span class="stat-val" id="detail-volume">--</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Tick Size / Lot</span>
+                            <span class="stat-val">₹0.05 / 25</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <div class="section-title">Market Profile</div>
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <span class="stat-label">Exchange</span>
+                            <span class="stat-val tv-text-blue" id="detail-exchange">NSE India</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Currency</span>
+                            <span class="stat-val">INR (₹)</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Market Status</span>
+                            <span class="stat-val tv-text-green">Live 1m Stream</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Timezone</span>
+                            <span class="stat-val">Asia/Kolkata (IST)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Bottom Status Bar -->
+    <footer class="tv-bottom-bar">
+        <div class="bottom-left">
+            <span class="status-dot live" id="connection-status"></span>
+            <span id="status-text">Connected to NSE Live Feed (NIFTY50 • 1m candle)</span>
+        </div>
+        <div class="bottom-right">
+            <span>TradingView Pro v4.2</span>
+            <span>•</span>
+            <span id="local-clock">Asia/Kolkata (IST)</span>
+        </div>
+    </footer>
+
+    <!-- Symbol Search Modal -->
+    <div class="modal-overlay" id="symbol-search-modal">
+        <div class="tv-modal-card">
+            <div class="modal-header">
+                <span class="modal-title">Symbol Search — Indian & Global Markets</span>
+                <button class="modal-close-btn" id="close-search-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-input-wrapper">
+                    <input type="text" class="search-input" id="symbol-search-input" placeholder="Search NIFTY, Bank Nifty, Reliance, TCS, BTC..." autocomplete="off">
+                </div>
+                <div class="search-category-tabs">
+                    <button class="search-cat-tab active" data-cat="All">All Markets</button>
+                    <button class="search-cat-tab" data-cat="Indian">🇮🇳 Indian (NSE / BSE)</button>
+                    <button class="search-cat-tab" data-cat="Crypto">Crypto (Binance)</button>
+                    <button class="search-cat-tab" data-cat="Global">Global</button>
+                </div>
+                <div id="symbol-search-results">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicators Modal -->
+    <div class="modal-overlay" id="indicators-modal">
+        <div class="tv-modal-card">
+            <div class="modal-header">
+                <span class="modal-title">Technical Indicators</span>
+                <button class="modal-close-btn" id="close-indicators-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="indicator-list">
+                    <div class="indicator-row">
+                        <div class="indicator-info">
+                            <span class="indicator-name">Volume Histogram (Vol)</span>
+                            <span class="indicator-sub">Sub-chart traded contracts & tick volume</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="indicator-toggle" data-indicator="volume" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="indicator-row">
+                        <div class="indicator-info">
+                            <span class="indicator-name">Simple Moving Average (SMA 20)</span>
+                            <span class="indicator-sub">20-period trend baseline</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="indicator-toggle" data-indicator="sma20" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="indicator-row">
+                        <div class="indicator-info">
+                            <span class="indicator-name">Exponential Moving Average (EMA 50)</span>
+                            <span class="indicator-sub">50-period momentum line</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="indicator-toggle" data-indicator="ema50">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="indicator-row">
+                        <div class="indicator-info">
+                            <span class="indicator-name">Exponential Moving Average (EMA 200)</span>
+                            <span class="indicator-sub">200-period macro trend</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="indicator-toggle" data-indicator="ema200">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="indicator-row">
+                        <div class="indicator-info">
+                            <span class="indicator-name">Bollinger Bands (20, 2)</span>
+                            <span class="indicator-sub">Volatility envelope</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="indicator-toggle" data-indicator="bollinger">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="indicator-row">
+                        <div class="indicator-info">
+                            <span class="indicator-name">Relative Strength Index (RSI 14)</span>
+                            <span class="indicator-sub">Oscillator (30/70 levels)</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="indicator-toggle" data-indicator="rsi">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="indicator-row">
+                        <div class="indicator-info">
+                            <span class="indicator-name">MACD (12, 26, 9)</span>
+                            <span class="indicator-sub">Moving Average Convergence Divergence</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="indicator-toggle" data-indicator="macd">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/indicators.js?v=4.0"></script>
+    <script src="js/data-feed.js?v=4.0"></script>
+    <script src="js/drawing-tools.js?v=4.0"></script>
+    <script src="js/chart-engine.js?v=4.0"></script>
+    <script src="js/app.js?v=4.0"></script>
+
+</body>
+</html>
