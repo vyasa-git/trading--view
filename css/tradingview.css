@@ -1226,77 +1226,134 @@ input:checked + .slider:before {
     flex-shrink: 0;
 }
 
-/* Watchlist Quick Scroll Controls */
+/* Watchlist Quick Scroll Controls with Up & Down Arrows */
 .watchlist-scroll-bar {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
+    justify-content: space-between;
+    padding: 5px 10px;
     background: #161a25;
     border-bottom: 1px solid var(--tv-border);
-    font-size: 10.5px;
+    font-size: 11px;
     flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 5;
 }
 .w-scroll-label {
     color: var(--tv-text-secondary);
     font-weight: 600;
-    margin-right: 2px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
-.w-scroll-btn {
+.arrow-scroll-pair {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.w-scroll-arrow-btn {
+    width: 26px;
+    height: 24px;
     background: var(--tv-bg-secondary);
     border: 1px solid var(--tv-border);
-    border-radius: 3px;
-    color: var(--tv-text-secondary);
-    font-size: 10px;
-    font-family: inherit;
-    font-weight: 600;
-    padding: 2px 7px;
-    cursor: pointer;
-    transition: all 0.12s;
-}
-.w-scroll-btn:hover {
-    background: var(--tv-bg-tertiary);
+    border-radius: 4px;
     color: var(--tv-text-primary);
-    border-color: var(--tv-border-hover);
+    font-size: 11px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
 }
-.w-scroll-active {
-    color: #ff9800 !important;
-    border-color: rgba(255, 152, 0, 0.4) !important;
+.w-scroll-arrow-btn:hover {
+    background: var(--tv-accent-blue);
+    border-color: var(--tv-accent-blue);
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(41, 98, 255, 0.4);
+    transform: translateY(-1px);
+}
+.w-scroll-arrow-btn:active {
+    transform: translateY(1px);
 }
 
-/* Option Chain Scroll Button Group in Header */
+/* Floating Scroll Arrows for Option Stocks & Watchlist */
+.w-floating-arrows {
+    position: sticky;
+    bottom: 12px;
+    margin-left: auto;
+    margin-right: 12px;
+    margin-top: -68px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 28px;
+    pointer-events: auto;
+}
+.w-float-arrow {
+    width: 28px;
+    height: 28px;
+    background: rgba(19, 23, 34, 0.94);
+    border: 1px solid var(--tv-border);
+    border-radius: 5px;
+    color: var(--tv-text-primary);
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    user-select: none;
+}
+.w-float-arrow:hover {
+    background: var(--tv-accent-blue);
+    border-color: var(--tv-accent-blue);
+    color: #ffffff;
+    transform: scale(1.08);
+}
+.w-float-arrow:active {
+    transform: scale(0.95);
+}
+
+/* Option Chain Header Scroll Arrows */
 .oc-scroll-btn-group {
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
     margin-left: auto;
 }
 .oc-scroll-btn {
+    width: 26px;
+    height: 24px;
     background: var(--tv-bg-secondary);
     border: 1px solid var(--tv-border);
-    border-radius: 3px;
-    color: var(--tv-text-secondary);
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--tv-text-primary);
+    font-size: 11px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    transition: all 0.12s;
+    transition: all 0.15s ease;
     user-select: none;
 }
 .oc-scroll-btn:hover {
-    background: var(--tv-bg-tertiary);
-    color: var(--tv-accent-blue);
+    background: var(--tv-accent-blue);
     border-color: var(--tv-accent-blue);
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(41, 98, 255, 0.4);
+    transform: translateY(-1px);
 }
-.oc-atm-btn {
-    color: #ff9800;
-    border-color: rgba(255, 152, 0, 0.45);
-    background: rgba(255, 152, 0, 0.08);
-}
-.oc-atm-btn:hover {
-    background: rgba(255, 152, 0, 0.2);
-    color: #ff9800;
-    border-color: #ff9800;
+.oc-scroll-btn:active {
+    transform: translateY(1px);
 }
 
 /* Floating Scroll Controls inside Option Chain Table */
@@ -1310,37 +1367,35 @@ input:checked + .slider:before {
     z-index: 10;
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    background: rgba(19, 23, 34, 0.92);
+    gap: 4px;
+    background: rgba(19, 23, 34, 0.94);
     border: 1px solid var(--tv-border);
-    border-radius: 5px;
+    border-radius: 6px;
     padding: 3px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
     backdrop-filter: blur(6px);
 }
 .oc-float-btn {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     background: transparent;
     border: none;
-    border-radius: 3px;
-    color: var(--tv-text-secondary);
-    font-size: 11px;
-    font-weight: 700;
+    border-radius: 4px;
+    color: var(--tv-text-primary);
+    font-size: 12px;
+    font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.12s;
+    transition: all 0.15s ease;
+    user-select: none;
 }
 .oc-float-btn:hover {
-    background: var(--tv-bg-tertiary);
-    color: var(--tv-accent-blue);
+    background: var(--tv-accent-blue);
+    color: #ffffff;
+    transform: scale(1.08);
 }
-.oc-float-atm {
-    color: #ff9800;
-    font-size: 12px;
-}
-.oc-float-atm:hover {
-    background: rgba(255, 152, 0, 0.25);
+.oc-float-btn:active {
+    transform: scale(0.95);
 }

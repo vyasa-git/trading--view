@@ -357,41 +357,30 @@ class TradingViewApp {
         const scrollUp = () => {
             const tableContainer = document.querySelector('.oc-table-container');
             if (tableContainer) {
-                tableContainer.scrollBy({ top: -160, behavior: 'smooth' });
+                tableContainer.scrollBy({ top: -200, behavior: 'smooth' });
             }
         };
 
         const scrollDown = () => {
             const tableContainer = document.querySelector('.oc-table-container');
             if (tableContainer) {
-                tableContainer.scrollBy({ top: 160, behavior: 'smooth' });
+                tableContainer.scrollBy({ top: 200, behavior: 'smooth' });
             }
         };
 
-        const scrollToATM = () => {
-            const atmRow = document.querySelector('.oc-row-atm');
-            if (atmRow) {
-                atmRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            }
-        };
-
-        // Header buttons
+        // Header arrows (One facing UP, one facing DOWN)
         const upBtn = document.getElementById('oc-scroll-up');
         const downBtn = document.getElementById('oc-scroll-down');
-        const atmBtn = document.getElementById('oc-scroll-atm');
 
         if (upBtn) upBtn.addEventListener('click', scrollUp);
         if (downBtn) downBtn.addEventListener('click', scrollDown);
-        if (atmBtn) atmBtn.addEventListener('click', scrollToATM);
 
-        // Floating table buttons
+        // Floating table arrows (One facing UP, one facing DOWN)
         const floatUp = document.getElementById('oc-float-up');
         const floatDown = document.getElementById('oc-float-down');
-        const floatAtm = document.getElementById('oc-float-atm');
 
         if (floatUp) floatUp.addEventListener('click', scrollUp);
         if (floatDown) floatDown.addEventListener('click', scrollDown);
-        if (floatAtm) floatAtm.addEventListener('click', scrollToATM);
     }
 
     renderOptionChain() {
@@ -691,30 +680,34 @@ class TradingViewApp {
 
         listContainer.innerHTML = '';
 
-        // Wire Watchlist Scroll Buttons
-        const watchlistScrollTop = document.getElementById('w-scroll-top');
-        const watchlistScrollBottom = document.getElementById('w-scroll-bottom');
-        const watchlistScrollActive = document.getElementById('w-scroll-active');
+        // Wire Watchlist Scroll Arrow Buttons (One UP, One DOWN)
+        const watchlistScrollUp = document.getElementById('w-scroll-up');
+        const watchlistScrollDown = document.getElementById('w-scroll-down');
+        const watchlistFloatUp = document.getElementById('w-float-up');
+        const watchlistFloatDown = document.getElementById('w-float-down');
         const watchlistPanel = document.getElementById('watchlist-panel');
 
-        if (watchlistScrollTop && !watchlistScrollTop.dataset.bound) {
-            watchlistScrollTop.dataset.bound = 'true';
-            watchlistScrollTop.addEventListener('click', () => {
-                if (watchlistPanel) watchlistPanel.scrollTo({ top: 0, behavior: 'smooth' });
-            });
+        const scrollWatchlist = (offset) => {
+            if (watchlistPanel) {
+                watchlistPanel.scrollBy({ top: offset, behavior: 'smooth' });
+            }
+        };
+
+        if (watchlistScrollUp && !watchlistScrollUp.dataset.bound) {
+            watchlistScrollUp.dataset.bound = 'true';
+            watchlistScrollUp.addEventListener('click', () => scrollWatchlist(-200));
         }
-        if (watchlistScrollBottom && !watchlistScrollBottom.dataset.bound) {
-            watchlistScrollBottom.dataset.bound = 'true';
-            watchlistScrollBottom.addEventListener('click', () => {
-                if (watchlistPanel) watchlistPanel.scrollTo({ top: watchlistPanel.scrollHeight, behavior: 'smooth' });
-            });
+        if (watchlistScrollDown && !watchlistScrollDown.dataset.bound) {
+            watchlistScrollDown.dataset.bound = 'true';
+            watchlistScrollDown.addEventListener('click', () => scrollWatchlist(200));
         }
-        if (watchlistScrollActive && !watchlistScrollActive.dataset.bound) {
-            watchlistScrollActive.dataset.bound = 'true';
-            watchlistScrollActive.addEventListener('click', () => {
-                const activeItem = document.querySelector('.watchlist-item.active');
-                if (activeItem) activeItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            });
+        if (watchlistFloatUp && !watchlistFloatUp.dataset.bound) {
+            watchlistFloatUp.dataset.bound = 'true';
+            watchlistFloatUp.addEventListener('click', () => scrollWatchlist(-200));
+        }
+        if (watchlistFloatDown && !watchlistFloatDown.dataset.bound) {
+            watchlistFloatDown.dataset.bound = 'true';
+            watchlistFloatDown.addEventListener('click', () => scrollWatchlist(200));
         }
 
         const allSymbols = this.dataFeed.symbols;
