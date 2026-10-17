@@ -87,7 +87,36 @@ class ChartEngine {
                 timeVisible: true,
                 secondsVisible: false,
                 barSpacing: this.currentBarSpacing || 6,
-                minBarSpacing: 1.5
+                minBarSpacing: 1.5,
+                tickMarkFormatter: (time) => {
+                    if (typeof time === 'number') {
+                        const date = new Date(time * 1000);
+                        return date.toLocaleTimeString('en-IN', {
+                            timeZone: 'Asia/Kolkata',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        });
+                    }
+                    return null;
+                }
+            },
+            localization: {
+                locale: 'en-IN',
+                dateFormat: 'yyyy-MM-dd',
+                timeFormatter: (time) => {
+                    if (typeof time === 'number') {
+                        const date = new Date(time * 1000);
+                        return date.toLocaleTimeString('en-IN', {
+                            timeZone: 'Asia/Kolkata',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: false
+                        });
+                    }
+                    return time;
+                }
             }
         });
 
