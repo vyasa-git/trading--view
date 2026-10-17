@@ -21,6 +21,7 @@ class ChartEngine {
         this.rawCandleData = [];
         this.currentCandle = null;
         this.showVolume = true;
+        this.currentBarSpacing = 6;
         this.activeIndicators = {
             volume: true,
             sma20: true,
@@ -84,7 +85,9 @@ class ChartEngine {
             timeScale: {
                 borderColor: '#2a2e39',
                 timeVisible: true,
-                secondsVisible: false
+                secondsVisible: false,
+                barSpacing: this.currentBarSpacing || 6,
+                minBarSpacing: 1.5
             }
         });
 
@@ -118,13 +121,58 @@ class ChartEngine {
 
         // Handle window resizing
         window.addEventListener('resize', () => {
-            if (this.chart && this.container) {
-                this.chart.applyOptions({
-                    width: this.container.clientWidth,
-                    height: this.container.clientHeight
-                });
-            }
+            this.resize();
         });
+    }
+
+    resize() {
+        if (this.chart && this.container) {
+            this.chart.applyOptions({
+                width: this.container.clientWidth,
+                height: this.container.clientHeight
+            });
+        }
+        if (this.fallbackEngine) {
+            this.fallbackEngine.render();
+        }
+    }
+
+    zoomIn() {
+        if (this.chart) {
+            const currentSpacing = this.currentBarSpacing || 6;
+            const newSpacing = Math.min(50, +(currentSpacing * 1.3).toFixed(2));
+            this.currentBarSpacing = newSpacing;
+            this.chart.timeScale().applyOptions({ barSpacing: newSpacing });
+        }
+        if (this.fallbackEngine) {
+            this.fallbackEngine.candleSpacing = Math.min(40, (this.fallbackEngine.candleSpacing || 10) * 1.3);
+            this.fallbackEngine.render();
+        }
+    }
+
+    zoomOut() {
+        if (this.chart) {
+            const currentSpacing = this.currentBarSpacing || 6;
+            const newSpacing = Math.max(1.5, +(currentSpacing / 1.3).toFixed(2));
+            this.currentBarSpacing = newSpacing;
+            this.chart.timeScale().applyOptions({ barSpacing: newSpacing });
+        }
+        if (this.fallbackEngine) {
+            this.fallbackEngine.candleSpacing = Math.max(2, (this.fallbackEngine.candleSpacing || 10) / 1.3);
+            this.fallbackEngine.render();
+        }
+    }
+
+    resetZoom() {
+        if (this.chart) {
+            this.currentBarSpacing = 6;
+            this.chart.timeScale().applyOptions({ barSpacing: 6 });
+            this.chart.timeScale().fitContent();
+        }
+        if (this.fallbackEngine) {
+            this.fallbackEngine.candleSpacing = 10;
+            this.fallbackEngine.render();
+        }
     }
 
     initIndicatorSeries() {

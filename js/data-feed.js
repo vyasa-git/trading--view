@@ -53,6 +53,108 @@ class DataFeed {
             'EURUSD': { name: 'Euro / US Dollar', category: 'Forex', exchange: 'FX', basePrice: 1.0865, precision: 5, tickSize: 0.00005, currency: '$', isCrypto: false },
             'XAUUSD': { name: 'Gold / US Dollar', category: 'Commodities', exchange: 'COMEX', basePrice: 2685.4, precision: 2, tickSize: 0.1, currency: '$', isCrypto: false }
         };
+
+        // Initialize all NIFTY 50 Option Contracts (CE & PE for all cash points)
+        this.initNiftyOptions();
+    }
+
+    initNiftyOptions() {
+        const spotPrice = 24850.25;
+        // Generate all cash points (strikes) available in market: 24000 to 25700 in 50 pt steps (35 strikes, 70 contracts)
+        for (let strike = 24000; strike <= 25700; strike += 50) {
+            const dist = strike - spotPrice;
+
+            // Calls (CE)
+            const intrinsicCE = Math.max(0, spotPrice - strike);
+            const timeValCE = Math.max(1.8, 134 * Math.exp(-Math.pow(Math.abs(dist) / 290, 1.25)));
+            const priceCE = +(Math.max(0.5, Math.round((intrinsicCE + timeValCE) / 0.05) * 0.05)).toFixed(2);
+
+            // Puts (PE)
+            const intrinsicPE = Math.max(0, strike - spotPrice);
+            const timeValPE = Math.max(1.8, 128 * Math.exp(-Math.pow(Math.abs(dist) / 290, 1.25)));
+            const pricePE = +(Math.max(0.5, Math.round((intrinsicPE + timeValPE) / 0.05) * 0.05)).toFixed(2);
+
+            const oiFactor = Math.max(0.08, Math.exp(-Math.pow(Math.abs(dist) / 450, 1.3)));
+            const oiCE = +(oiFactor * (85 + (strike % 100 === 0 ? 25 : 0))).toFixed(1);
+            const oiPE = +(oiFactor * (82 + (strike % 100 === 0 ? 28 : 0))).toFixed(1);
+            const volCE = +(oiFactor * (115 + Math.random() * 20)).toFixed(1);
+            const volPE = +(oiFactor * (110 + Math.random() * 20)).toFixed(1);
+
+            const ceKey = `NIFTY${strike}CE`;
+            this.symbols[ceKey] = {
+                name: `NIFTY 24-OCT ${strike} CE`,
+                shortName: `${strike} CE`,
+                category: 'NIFTY Options',
+                exchange: 'NSE',
+                basePrice: priceCE,
+                precision: 2,
+                tickSize: 0.05,
+                currency: '₹',
+                isCrypto: false,
+                isOption: true,
+                optionType: 'CE',
+                strike: strike,
+                oi: `${oiCE}L`,
+                volume: `${volCE}L`,
+                iv: 13.5
+            };
+
+            const peKey = `NIFTY${strike}PE`;
+            this.symbols[peKey] = {
+                name: `NIFTY 24-OCT ${strike} PE`,
+                shortName: `${strike} PE`,
+                category: 'NIFTY Options',
+                exchange: 'NSE',
+                basePrice: pricePE,
+                precision: 2,
+                tickSize: 0.05,
+                currency: '₹',
+                isCrypto: false,
+                isOption: true,
+                optionType: 'PE',
+                strike: strike,
+                oi: `${oiPE}L`,
+                volume: `${volPE}L`,
+                iv: 14.1
+            };
+        }
+    }
+
+    getOptionChainData(spotSymbol = 'NIFTY50') {
+        const spotInfo = this.getSymbolInfo(spotSymbol);
+        const spotPrice = spotInfo.basePrice || 24850.25;
+        const atmStrike = Math.round(spotPrice / 50) * 50;
+
+        const rows = [];
+        for (let strike = 24000; strike <= 25700; strike += 50) {
+            const ceKey = `NIFTY${strike}CE`;
+            const peKey = `NIFTY${strike}PE`;
+            const ceInfo = this.symbols[ceKey] || this.getSymbolInfo(ceKey);
+            const peInfo = this.symbols[peKey] || this.getSymbolInfo(peKey);
+
+            rows.push({
+                strike,
+                isATM: strike === atmStrike,
+                spotPrice,
+                ce: {
+                    symbol: ceKey,
+                    name: ceInfo.shortName || `${strike} CE`,
+                    ltp: ceInfo.basePrice,
+                    oi: ceInfo.oi || '45.0L',
+                    volume: ceInfo.volume || '60.0L',
+                    isITM: strike < spotPrice
+                },
+                pe: {
+                    symbol: peKey,
+                    name: peInfo.shortName || `${strike} PE`,
+                    ltp: peInfo.basePrice,
+                    oi: peInfo.oi || '42.0L',
+                    volume: peInfo.volume || '58.0L',
+                    isITM: strike > spotPrice
+                }
+            });
+        }
+        return rows;
     }
 
     subscribe(eventType, callback) {
@@ -70,7 +172,8 @@ class DataFeed {
     }
 
     getSymbolInfo(symbol) {
-        return this.symbols[symbol] || {
+        const clean = (symbol || '').replace(/\s+/g, '').toUpperCase();
+        return this.symbols[clean] || this.symbols[symbol] || {
             name: symbol,
             category: 'Indian Stocks',
             exchange: 'NSE',
@@ -241,10 +344,13 @@ class DataFeed {
         else if (info.category === 'Forex') volatility = 0.0004;
         else if (info.category === 'Indian Indices') volatility = 0.0006;
         else if (info.category === 'Indian Stocks') volatility = 0.0010;
+        else if (info.isOption || info.category === 'NIFTY Options') volatility = 0.0065;
 
         const snapPrice = (val) => {
             const step = info.tickSize || 0.05;
-            return +(Math.round(val / step) * step).toFixed(info.precision);
+            const snapped = Math.round(val / step) * step;
+            const minAllowed = info.isOption ? 0.05 : (step || 0.01);
+            return +(Math.max(minAllowed, snapped)).toFixed(info.precision);
         };
 
         const history = [];
@@ -299,9 +405,10 @@ class DataFeed {
             }
 
             // Generate realistic price tick with micro drift
-            const tickDrift = (Math.random() - 0.498) * (this.currentCandle.close * volatility * 0.15);
+            const tickDrift = (Math.random() - 0.498) * (this.currentCandle.close * volatility * 0.16);
             let nextClose = snapPrice(this.currentCandle.close + tickDrift);
-            if (nextClose <= 0) nextClose = info.basePrice;
+            if (nextClose <= 0.05 && info.isOption) nextClose = 0.05;
+            else if (nextClose <= 0) nextClose = info.basePrice;
 
             this.currentCandle.close = nextClose;
             if (nextClose > this.currentCandle.high) this.currentCandle.high = nextClose;
@@ -315,7 +422,9 @@ class DataFeed {
 
             // Emit live trade stream
             const side = tickDrift >= 0 ? 'buy' : 'sell';
-            const tradeQty = info.category === 'Indian Indices' ? Math.floor(Math.random() * 75 + 25) : +(Math.random() * 1.8 + 0.05).toFixed(2);
+            const tradeQty = info.isOption
+                ? (Math.floor(Math.random() * 8 + 1) * 25)
+                : (info.category === 'Indian Indices' ? Math.floor(Math.random() * 75 + 25) : +(Math.random() * 1.8 + 0.05).toFixed(2));
             this.emit('onTrade', {
                 price: nextClose,
                 quantity: tradeQty,

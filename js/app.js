@@ -57,6 +57,10 @@ class TradingViewApp {
 
         // Setup UI handlers
         this.setupToolbarEvents();
+        this.setupSidebarTabs();
+        this.setupSidebarToggle();
+        this.setupZoomControls();
+        this.setupOptionChain();
         this.setupWatchlist('Indian');
         this.setupModals();
         this.setupCountdownTimer();
@@ -72,6 +76,7 @@ class TradingViewApp {
         this.updateHeaderSymbolInfo(symbol);
         this.updateRibbonActive(symbol);
         this.setupWatchlist(this.watchlistCategory);
+        this.highlightActiveOptionContract(symbol);
     }
 
     updateRibbonActive(symbol) {
@@ -240,6 +245,176 @@ class TradingViewApp {
                 toggleBtn.style.background = 'rgba(41, 98, 255, 0.15)';
                 toggleBtn.style.borderColor = 'rgba(41, 98, 255, 0.4)';
                 toggleBtn.style.color = 'var(--tv-accent-blue)';
+            }
+        });
+    }
+
+    setupSidebarTabs() {
+        const tabs = document.querySelectorAll('.sidebar-tab');
+        const panels = document.querySelectorAll('.sidebar-panel-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                panels.forEach(p => p.classList.remove('active'));
+
+                tab.classList.add('active');
+                const targetId = tab.dataset.target;
+                const panel = document.getElementById(targetId);
+                if (panel) panel.classList.add('active');
+
+                if (targetId === 'optionchain-panel') {
+                    this.renderOptionChain();
+                }
+            });
+        });
+    }
+
+    setupSidebarToggle() {
+        const sidebar = document.getElementById('tv-right-sidebar');
+        const closeBtn = document.getElementById('sidebar-close-btn');
+        const headerToggleBtn = document.getElementById('sidebar-toggle-btn');
+        const floatingToggleBtn = document.getElementById('floating-sidebar-toggle');
+        const floatingIcon = document.getElementById('floating-toggle-icon');
+
+        const toggleSidebar = (forceState) => {
+            if (!sidebar) return;
+            const willCollapse = forceState !== undefined ? !forceState : !sidebar.classList.contains('collapsed');
+
+            if (willCollapse) {
+                sidebar.classList.add('collapsed');
+                if (headerToggleBtn) headerToggleBtn.classList.remove('active');
+                if (floatingIcon) floatingIcon.innerHTML = '<path d="M15 18l-6-6 6-6"/>';
+                if (floatingToggleBtn) floatingToggleBtn.title = "Open Sidebar (Watchlist & Option Chain)";
+            } else {
+                sidebar.classList.remove('collapsed');
+                if (headerToggleBtn) headerToggleBtn.classList.add('active');
+                if (floatingIcon) floatingIcon.innerHTML = '<path d="M9 18l6-6-6-6"/>';
+                if (floatingToggleBtn) floatingToggleBtn.title = "Close Sidebar";
+            }
+
+            // Immediately resize chart canvas to expand across full viewport
+            setTimeout(() => {
+                if (this.chartEngine) {
+                    this.chartEngine.resize();
+                }
+                window.dispatchEvent(new Event('resize'));
+            }, 60);
+        };
+
+        if (closeBtn) closeBtn.addEventListener('click', () => toggleSidebar(false));
+        if (headerToggleBtn) headerToggleBtn.addEventListener('click', () => toggleSidebar());
+        if (floatingToggleBtn) floatingToggleBtn.addEventListener('click', () => toggleSidebar());
+    }
+
+    setupZoomControls() {
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const zoomResetBtn = document.getElementById('zoom-reset-btn');
+
+        if (zoomInBtn) {
+            zoomInBtn.addEventListener('click', () => {
+                this.chartEngine.zoomIn();
+            });
+        }
+
+        if (zoomOutBtn) {
+            zoomOutBtn.addEventListener('click', () => {
+                this.chartEngine.zoomOut();
+            });
+        }
+
+        if (zoomResetBtn) {
+            zoomResetBtn.addEventListener('click', () => {
+                this.chartEngine.resetZoom();
+            });
+        }
+    }
+
+    setupOptionChain() {
+        const filterSelect = document.getElementById('oc-strike-filter');
+        if (filterSelect) {
+            filterSelect.addEventListener('change', () => {
+                this.renderOptionChain();
+            });
+        }
+    }
+
+    renderOptionChain() {
+        const tbody = document.getElementById('option-chain-tbody');
+        const spotValEl = document.getElementById('oc-spot-val');
+        const atmTagEl = document.getElementById('oc-atm-tag');
+        const filterSelect = document.getElementById('oc-strike-filter');
+        if (!tbody) return;
+
+        const filterMode = filterSelect ? filterSelect.value : 'all';
+        const chainData = this.dataFeed.getOptionChainData('NIFTY50');
+        if (!chainData || chainData.length === 0) return;
+
+        const spotPrice = chainData[0].spotPrice;
+        const atmStrike = Math.round(spotPrice / 50) * 50;
+
+        if (spotValEl) spotValEl.innerText = `₹${spotPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        if (atmTagEl) atmTagEl.innerText = `ATM: ${atmStrike}`;
+
+        tbody.innerHTML = '';
+        let atmRowElement = null;
+
+        chainData.forEach(row => {
+            const dist = Math.abs(row.strike - atmStrike);
+            if (filterMode === 'atm300' && dist > 300) return;
+            if (filterMode === 'atm500' && dist > 500) return;
+
+            const tr = document.createElement('tr');
+            if (row.isATM) tr.className = 'oc-row-atm';
+
+            const isCurrentCE = this.currentSymbol === row.ce.symbol;
+            const isCurrentPE = this.currentSymbol === row.pe.symbol;
+
+            tr.innerHTML = `
+                <td class="oc-cell-oi ${row.ce.isITM ? 'oc-itm-call' : ''}">${row.ce.oi}</td>
+                <td class="oc-cell-price oc-clickable ${row.ce.isITM ? 'oc-itm-call' : ''} ${isCurrentCE ? 'active-contract' : ''}" data-symbol="${row.ce.symbol}" title="Load ${row.ce.name} 1m Chart">
+                    <span class="tv-text-green">${row.ce.ltp.toFixed(2)}</span>
+                </td>
+                <td class="oc-strike-cell ${row.isATM ? 'atm' : ''}" title="${row.isATM ? 'At The Money (ATM)' : ''}">
+                    ${row.strike} ${row.isATM ? '<span style="font-size:9px;color:#ff9800;">★</span>' : ''}
+                </td>
+                <td class="oc-cell-price oc-clickable ${row.pe.isITM ? 'oc-itm-put' : ''} ${isCurrentPE ? 'active-contract' : ''}" data-symbol="${row.pe.symbol}" title="Load ${row.pe.name} 1m Chart">
+                    <span class="tv-text-red">${row.pe.ltp.toFixed(2)}</span>
+                </td>
+                <td class="oc-cell-oi ${row.pe.isITM ? 'oc-itm-put' : ''}">${row.pe.oi}</td>
+            `;
+
+            tr.querySelectorAll('.oc-clickable').forEach(cell => {
+                cell.addEventListener('click', () => {
+                    const sym = cell.dataset.symbol;
+                    if (sym) {
+                        this.selectSymbol(sym);
+                    }
+                });
+            });
+
+            if (row.isATM) {
+                atmRowElement = tr;
+            }
+
+            tbody.appendChild(tr);
+        });
+
+        // Auto-scroll to ATM strike row so it's centered
+        if (atmRowElement) {
+            setTimeout(() => {
+                atmRowElement.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }, 60);
+        }
+    }
+
+    highlightActiveOptionContract(symbol) {
+        document.querySelectorAll('.oc-clickable').forEach(cell => {
+            if (cell.dataset.symbol === symbol) {
+                cell.classList.add('active-contract');
+            } else {
+                cell.classList.remove('active-contract');
             }
         });
     }
@@ -448,6 +623,7 @@ class TradingViewApp {
 
         tabsContainer.innerHTML = `
             <button class="w-subtab ${this.watchlistCategory === 'Indian' ? 'active' : ''}" data-cat="Indian">🇮🇳 Indian</button>
+            <button class="w-subtab ${this.watchlistCategory === 'Options' ? 'active' : ''}" data-cat="Options">⚡ Options</button>
             <button class="w-subtab ${this.watchlistCategory === 'All' ? 'active' : ''}" data-cat="All">All</button>
             <button class="w-subtab ${this.watchlistCategory === 'Crypto' ? 'active' : ''}" data-cat="Crypto">Crypto</button>
             <button class="w-subtab ${this.watchlistCategory === 'Global' ? 'active' : ''}" data-cat="Global">Global</button>
@@ -466,9 +642,15 @@ class TradingViewApp {
             const item = allSymbols[symbol];
 
             // Apply category filter
-            if (this.watchlistCategory === 'Indian' && !item.category.includes('Indian')) return;
-            if (this.watchlistCategory === 'Crypto' && item.category !== 'Crypto') return;
-            if (this.watchlistCategory === 'Global' && (item.category.includes('Indian') || item.category === 'Crypto')) return;
+            if (this.watchlistCategory === 'Indian') {
+                if (!item.category.includes('Indian') || item.isOption) return;
+            } else if (this.watchlistCategory === 'Options') {
+                if (!item.isOption && item.category !== 'NIFTY Options') return;
+            } else if (this.watchlistCategory === 'Crypto') {
+                if (item.category !== 'Crypto') return;
+            } else if (this.watchlistCategory === 'Global') {
+                if (item.category.includes('Indian') || item.category === 'Crypto' || item.isOption) return;
+            }
 
             const div = document.createElement('div');
             div.className = `watchlist-item ${symbol === this.currentSymbol ? 'active' : ''}`;
@@ -579,9 +761,10 @@ class TradingViewApp {
             const item = allSymbols[sym];
 
             // Category filter match
-            if (this.searchCategory === 'Indian' && !item.category.includes('Indian')) return false;
+            if (this.searchCategory === 'Indian' && (!item.category.includes('Indian') || item.isOption)) return false;
+            if (this.searchCategory === 'Options' && !item.isOption) return false;
             if (this.searchCategory === 'Crypto' && item.category !== 'Crypto') return false;
-            if (this.searchCategory === 'Global' && (item.category.includes('Indian') || item.category === 'Crypto')) return false;
+            if (this.searchCategory === 'Global' && (item.category.includes('Indian') || item.category === 'Crypto' || item.isOption)) return false;
 
             // Query text match
             if (!query) return true;

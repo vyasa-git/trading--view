@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TradingView — NIFTY 50 & Indian Markets Live 1-Minute Chart</title>
-    <link rel="stylesheet" href="css/tradingview.css?v=4.0">
+    <link rel="stylesheet" href="css/tradingview.css?v=5.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff9800'><path d='M3 3v18h18V3H3zm16 16H5V5h14v14zM7 10h2v7H7zm4-4h2v11h-2zm4 6h2v5h-2z'/></svg>">
     <!-- Charting Engines -->
     <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -92,6 +92,13 @@
 
         <!-- Right utility actions -->
         <div class="header-right">
+            <button class="tv-btn active" id="sidebar-toggle-btn" title="Toggle Watchlist & Option Chain Sidebar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <path d="M15 3v18"/>
+                </svg>
+                <span>Sidebar</span>
+            </button>
             <button class="tv-btn" id="screenshot-btn" title="Take a chart snapshot">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -213,27 +220,108 @@
                 <div class="price-scale-overlay">
                     <div class="candle-countdown-badge" id="candle-countdown">00:60</div>
                 </div>
+
+                <!-- Floating Chart Zoom & Size Controls (+ and -) -->
+                <div class="chart-zoom-controls" id="chart-zoom-controls">
+                    <button class="zoom-btn" id="zoom-in-btn" title="Zoom In (+ Increase Candle Size / Spacing)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button class="zoom-btn" id="zoom-out-btn" title="Zoom Out (- Decrease Candle Size / Spacing)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button class="zoom-btn" id="zoom-reset-btn" title="Reset Chart Zoom (Fit candles)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Floating Sidebar Open/Close Chevron Tab -->
+                <button class="floating-sidebar-toggle" id="floating-sidebar-toggle" title="Toggle Right Sidebar">
+                    <svg id="floating-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </button>
             </div>
         </main>
 
         <!-- Right Sidebar -->
-        <aside class="tv-right-sidebar">
+        <aside class="tv-right-sidebar" id="tv-right-sidebar">
             <div class="sidebar-tab-header">
                 <button class="sidebar-tab active" data-target="watchlist-panel">Watchlist</button>
+                <button class="sidebar-tab" data-target="optionchain-panel">⚡ Option Chain</button>
                 <button class="sidebar-tab" data-target="trades-panel">Live Tape</button>
                 <button class="sidebar-tab" data-target="technicals-panel">Technicals</button>
+                <button class="sidebar-close-btn" id="sidebar-close-btn" title="Close Sidebar (Expand Chart)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
 
             <!-- Panel 1: Watchlist -->
             <div class="sidebar-panel-content active" id="watchlist-panel">
                 <div class="watchlist-subtabs" id="watchlist-category-tabs">
                     <button class="w-subtab active" data-cat="Indian">🇮🇳 Indian</button>
+                    <button class="w-subtab" data-cat="Options">⚡ Options</button>
                     <button class="w-subtab" data-cat="All">All</button>
                     <button class="w-subtab" data-cat="Crypto">Crypto</button>
                     <button class="w-subtab" data-cat="Global">Global</button>
                 </div>
                 <div id="watchlist-items">
                     <!-- Dynamically populated by app.js -->
+                </div>
+            </div>
+
+            <!-- Panel: NIFTY 50 Option Chain (All Cash Points CE & PE) -->
+            <div class="sidebar-panel-content" id="optionchain-panel">
+                <div class="oc-header-banner">
+                    <div class="oc-spot-info">
+                        <span class="oc-spot-label">NIFTY Spot:</span>
+                        <span class="oc-spot-val" id="oc-spot-val">₹24,850.25</span>
+                        <span class="oc-atm-badge" id="oc-atm-tag">ATM: 24850</span>
+                    </div>
+                    <div class="oc-filter-row">
+                        <span class="oc-sub-label">Strikes:</span>
+                        <select id="oc-strike-filter" class="oc-select">
+                            <option value="atm300">Near ATM (±300 pts)</option>
+                            <option value="atm500">Active (±500 pts)</option>
+                            <option value="all" selected>All Cash Points (24000-25700)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Option Chain Table Header -->
+                <div class="oc-table-container">
+                    <table class="oc-table" id="option-chain-table">
+                        <thead>
+                            <tr class="oc-super-header">
+                                <th colspan="2" class="call-header">CALLS (CE)</th>
+                                <th class="strike-header">STRIKE</th>
+                                <th colspan="2" class="put-header">PUTS (PE)</th>
+                            </tr>
+                            <tr class="oc-sub-header">
+                                <th class="col-oi" title="Open Interest">OI</th>
+                                <th class="col-ltp" title="Last Traded Price">CE LTP</th>
+                                <th class="col-strike">Strike</th>
+                                <th class="col-ltp" title="Last Traded Price">PE LTP</th>
+                                <th class="col-oi" title="Open Interest">OI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="option-chain-tbody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="oc-footer-hint">
+                    💡 Click any <b>CE</b> or <b>PE</b> to load 1m candle chart
                 </div>
             </div>
 
@@ -331,6 +419,7 @@
                 <div class="search-category-tabs">
                     <button class="search-cat-tab active" data-cat="All">All Markets</button>
                     <button class="search-cat-tab" data-cat="Indian">🇮🇳 Indian (NSE / BSE)</button>
+                    <button class="search-cat-tab" data-cat="Options">⚡ Options (CE/PE)</button>
                     <button class="search-cat-tab" data-cat="Crypto">Crypto (Binance)</button>
                     <button class="search-cat-tab" data-cat="Global">Global</button>
                 </div>
@@ -426,11 +515,11 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/indicators.js?v=4.0"></script>
-    <script src="js/data-feed.js?v=4.0"></script>
-    <script src="js/drawing-tools.js?v=4.0"></script>
-    <script src="js/chart-engine.js?v=4.0"></script>
-    <script src="js/app.js?v=4.0"></script>
+    <script src="js/indicators.js?v=5.0"></script>
+    <script src="js/data-feed.js?v=5.0"></script>
+    <script src="js/drawing-tools.js?v=5.0"></script>
+    <script src="js/chart-engine.js?v=5.0"></script>
+    <script src="js/app.js?v=5.0"></script>
 
 </body>
 </html>
